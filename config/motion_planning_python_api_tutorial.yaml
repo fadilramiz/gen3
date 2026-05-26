@@ -1,0 +1,121 @@
+planning_scene_monitor_options:
+  name: "planning_scene_monitor"
+  robot_description: "robot_description"
+  joint_state_topic: "/joint_states"
+  attached_collision_object_topic: "/moveit_cpp/planning_scene_monitor"
+  publish_planning_scene_topic: "/moveit_cpp/publish_planning_scene"
+  monitored_planning_scene_topic: "/moveit_cpp/monitored_planning_scene"
+  wait_for_initial_state_timeout: 10.0
+
+planning_pipelines:
+  pipeline_names: ["ompl", "pilz_industrial_motion_planner", "chomp"]
+  
+ompl:
+  planning_plugins:
+    - ompl_interface/OMPLPlanner
+  response_adapters:
+    - default_planning_response_adapters/AddTimeOptimalParameterization
+    - default_planning_response_adapters/ValidateSolution
+    - default_planning_response_adapters/DisplayMotionPath
+  request_adapters:
+    - default_planning_request_adapters/ResolveConstraintFrames
+    - default_planning_request_adapters/ValidateWorkspaceBounds
+    - default_planning_request_adapters/CheckStartStateBounds
+    - default_planning_request_adapters/CheckStartStateCollision  
+
+pilz_industrial_motion_planner:
+  planning_plugins:
+    - pilz_industrial_motion_planner/CommandPlanner
+
+chomp:
+  planning_plugins:
+    - chomp_interface/CHOMPPlanner
+  response_adapters:
+    - default_planning_response_adapters/AddTimeOptimalParameterization 
+    - default_planning_response_adapters/ValidateSolution
+
+robot_description_planning:
+  cartesian_limits:
+    max_trans_vel: 1.0
+    max_trans_acc: 2.25
+    max_trans_dec: -5.0
+    max_rot_vel: 1.57
+  joint_limits:
+    joint_1:
+      has_velocity_limits: true
+      max_velocity: 1.3963000000000001
+      has_acceleration_limits: true
+      max_acceleration: 0.5
+    joint_2:
+      has_velocity_limits: true
+      max_velocity: 1.3963000000000001
+      has_acceleration_limits: true
+      max_acceleration: 0.5
+    joint_3:
+      has_velocity_limits: true
+      max_velocity: 1.3963000000000001
+      has_acceleration_limits: true
+      max_acceleration: 0.5
+    joint_4:
+      has_velocity_limits: true
+      max_velocity: 1.3963000000000001
+      has_acceleration_limits: true
+      max_acceleration: 0.5
+    joint_5:
+      has_velocity_limits: true
+      max_velocity: 1.2218
+      has_acceleration_limits: true
+      max_acceleration: 0.5
+    joint_6:
+      has_velocity_limits: true
+      max_velocity: 1.2218
+      has_acceleration_limits: true
+      max_acceleration: 0.5
+    joint_7:
+      has_velocity_limits: true
+      max_velocity: 1.2218
+      has_acceleration_limits: true
+      max_acceleration: 0.5
+    panda_finger_joint1:
+      has_velocity_limits: true
+      max_velocity: 0.20000000000000001
+      has_acceleration_limits: true
+      max_acceleration: 0.5
+    panda_finger_joint2:
+      has_velocity_limits: true
+      max_velocity: 0.20000000000000001
+      has_acceleration_limits: true
+      max_acceleration: 0.5
+plan_request_params:
+  planning_attempts: 1
+  planning_pipeline: ompl
+  planner_id: "RRTConnectkConfigDefault"
+  max_velocity_scaling_factor: 1.0
+  max_acceleration_scaling_factor: 1.0
+  planning_time: 1.0
+
+ompl_rrtc:  # Namespace for individual plan request
+  plan_request_params:  # PlanRequestParameters similar to the ones that are used by the single pipeline planning of moveit_cpp
+    planning_attempts: 1  # Number of attempts the planning pipeline tries to solve a given motion planning problem
+    planning_pipeline: ompl  # Name of the pipeline that is being used
+    planner_id: "RRTConnectkConfigDefault"  # Name of the specific planner to be used by the pipeline
+    max_velocity_scaling_factor: 1.0  # Velocity scaling parameter for the trajectory generation algorithm that is called (if configured) after the path planning
+    max_acceleration_scaling_factor: 1.0  # Acceleration scaling parameter for the trajectory generation algorithm that is called (if configured) after the path planning
+    planning_time: 1.0  # Time budget for the motion plan request. If the planning problem cannot be solved within this time, an empty solution with error code is returned
+
+pilz_lin:
+  plan_request_params:
+    planning_attempts: 1
+    planning_pipeline: pilz_industrial_motion_planner
+    planner_id: "PTP"
+    max_velocity_scaling_factor: 1.0
+    max_acceleration_scaling_factor: 1.0
+    planning_time: 0.8
+
+chomp_planner:
+  plan_request_params:
+    planning_attempts: 1
+    planning_pipeline: chomp
+    max_velocity_scaling_factor: 1.0
+    max_acceleration_scaling_factor: 1.0
+    planning_time: 1.5

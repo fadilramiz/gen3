@@ -1,0 +1,25 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: ""
+    relative_path: /home/fadil-ramiz/Ros_training/gen3_7dof/gen3_7dof_panda_gripper.urdf
+  srdf:
+    relative_path: config/GEN3-7DOF-VISION_ARM_URDF_V12.srdf
+  package_settings:
+    author_name: fadil
+    author_email: njikamfadil34@gmail.com
+    generated_timestamp: 1777700339
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity
+  modified_urdf:
+    xacros:
+      - control_xacro
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity
