@@ -8,7 +8,8 @@ Robot Kinova GEN3 7DOF avec pince Panda, simulé dans Gazebo Harmonic avec MoveI
 - Gazebo Harmonic (gz-sim 8)
 - ros_gz_bridge
 
-## Avant l'execution du fichier rassurez vous que le nom du package soit exactement "gen3" 
+## Prerequis
+Assurez vous le nom du package soit "gen3" 
 
 ## Lancement
 ```bash
