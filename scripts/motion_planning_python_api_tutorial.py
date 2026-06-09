@@ -136,6 +136,8 @@ def main():
     gripper.set_goal_state(robot_state=gripper_state)
     plan_and_execute(gen, gripper, logger, sleep_time=10.0, controllers=["gripper_plan_controller"])
 
+    z_position = 0.12 - 0.02 + 0.04 #offset - grip_marge + z_object 
+
     pose_goal = PoseStamped()
     pose_goal.header.frame_id = "base_link"
     pose_goal.pose.orientation.x = 1.0
@@ -144,12 +146,12 @@ def main():
     pose_goal.pose.orientation.w = 0.0
     pose_goal.pose.position.x = 0.4
     pose_goal.pose.position.y = 0.0
-    pose_goal.pose.position.z = 0.17
+    pose_goal.pose.position.z = z_position + 0.03 #For a bit up
     arm.set_goal_state(pose_stamped_msg=pose_goal, pose_link="end_effector_link")
     # plan to goal
     plan_and_execute(gen, arm, logger, sleep_time=15.0)
 
-    pose_goal.pose.position.z = 0.14     # hauteur de saisie (box z=0.02 + moitié 0.02 + offset pince)
+    pose_goal.pose.position.z = z_position     # hauteur de saisie (box z=0.02 + moitié 0.02 + offset pince)
     arm.set_start_state_to_current_state()
     arm.set_goal_state(pose_stamped_msg=pose_goal, pose_link="end_effector_link")
     plan_and_execute(gen, arm, logger, sleep_time=20.0)

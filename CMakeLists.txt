@@ -18,3 +18,7 @@ install(PROGRAMS
   scripts/motion_planning_python_api_tutorial.py
   DESTINATION lib/${PROJECT_NAME}
 )
+install(PROGRAMS
+  scripts/ai_motion_planning.py
+  DESTINATION lib/${PROJECT_NAME}
+)
