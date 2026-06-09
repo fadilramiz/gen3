@@ -21,15 +21,15 @@ source install/setup.bash
 
 ## Lancement
 
-# Cas_1:
+### Cas_1:
 ```bash
 ros2 launch gen3 moveit_planning.launch.py
 ```
 Le robot effectura une simulation de pick and place avec des valeurs predefinies
 
-## Cas_2:
+###Cas_2:
 ```bash
 ros2 launch gen3 moveit_planning.launch.py example_file:=ai_motion_planning.py
 ```
-Le robor fonctionnera sous une IA locale "llama3.2b:1b" (venant de ollama), le but de celui-ci etant de recevoir un ordre et de l'executer.
+Le robot fonctionnera sous une IA locale "llama3.2b:1b" (venant de ollama), le but de celui-ci etant de recevoir un ordre et de l'executer.
 Le prompt est predefini et contient 1 seule action pour l'instant.
