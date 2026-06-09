@@ -21,7 +21,7 @@ source install/setup.bash
 
 ## Lancement
 
-## Cas_1:
+# Cas_1:
 ```bash
 ros2 launch gen3 moveit_planning.launch.py
 ```
