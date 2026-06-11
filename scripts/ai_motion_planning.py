@@ -22,7 +22,9 @@ def move_to(dist, actual):
 
 
 def generic_chat():
-    return "please provide more information !"
+    return (
+        "Failed to load needed data from the request, please provide more information !"
+    )
 
 
 def move_arm(x_pos, y_pos, z_pos):
@@ -151,7 +153,7 @@ def main():
                 "content": (
                     "You are a function-calling assistant. "
                     "You MUST ALWAYS respond by calling exactly one tool from the provided list. "
-                    "NEVER respond with plain text. "
+                    # "NEVER respond with plain text. "
                     "NEVER add explanations. "
                     "Only output a tool call with the correct arguments in form of string extracted from the user message."
                 ),
@@ -161,10 +163,6 @@ def main():
         tools=tools,
     )
     print(response)
-
-    x_pos = 0.0
-    y_pos = 0.0
-    z_pos = 0.0
 
     if (
         "message" in response
@@ -183,13 +181,21 @@ def main():
         if tool_name == "move_to":
             actuel = move_to(int(argument["distance"]), int(actuel))
             print(actuel)
-        elif tool_name == "move_arm":
+        elif tool_name == "move_arm" and (
+            float(argument["x_position"]) > 0.0
+            or float(argument["y_position"]) > 0.0
+            or float(argument["z_position"]) > 0.0
+        ):
             x_pos = float(argument["x_position"])
             y_pos = float(argument["y_position"])
             z_pos = float(argument["z_position"])
             move_arm(x_pos, y_pos, z_pos)
+        else:
+            print(generic_chat())
+            return
     else:
         print(generic_chat())
+        return
 
     ###########################################################################
     # Plan 3 - set goal state with PoseStamped message
@@ -213,9 +219,9 @@ def main():
     pose_goal.pose.orientation.y = 0.0
     pose_goal.pose.orientation.z = 0.0
     pose_goal.pose.orientation.w = 0.0
-    pose_goal.pose.position.x = x_pos + 0.4
-    pose_goal.pose.position.y = y_pos + 0.0
-    pose_goal.pose.position.z = z_pos + 0.17
+    pose_goal.pose.position.x = x_pos
+    pose_goal.pose.position.y = y_pos
+    pose_goal.pose.position.z = z_pos
     arm.set_goal_state(pose_stamped_msg=pose_goal, pose_link="end_effector_link")
     # plan to goal
     plan_and_execute(gen, arm, logger, sleep_time=15.0)
