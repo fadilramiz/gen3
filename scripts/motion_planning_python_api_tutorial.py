@@ -8,12 +8,13 @@ import time
 # generic ros libraries
 import rclpy
 from rclpy.logging import get_logger
+from geometry_msgs.msg import PoseStamped
 
 # moveit python library
 from moveit.core.robot_state import RobotState
 from moveit.planning import (
     MoveItPy,
-    MultiPipelinePlanRequestParameters,
+    # MultiPipelinePlanRequestParameters,
 )
 
 
@@ -23,8 +24,8 @@ def plan_and_execute(
     logger,
     single_plan_parameters=None,
     multi_plan_parameters=None,
-    sleep_time=0.0,
-    controllers=["arm_gripper_controller"]
+    sleep_time=1.0,
+    controllers=[],
 ):
     """Helper function to plan and execute a motion."""
     # plan to goal
@@ -45,11 +46,9 @@ def plan_and_execute(
         logger.info("Executing plan")
         robot_trajectory = plan_result.trajectory
         robot.execute(robot_trajectory, controllers=controllers)
+        time.sleep(sleep_time)
     else:
         logger.error("Planning failed")
-
-    time.sleep(sleep_time)
-
 
 
 def main():
@@ -66,9 +65,6 @@ def main():
     gripper = gen.get_planning_component("gripper_plan")
     logger.info("MoveItPy instance created")
 
-
-    
-
     ###########################################################################
     # Plan 2 - set goal state with RobotState object
     ###########################################################################
@@ -78,7 +74,9 @@ def main():
     robot_state = RobotState(robot_model)
 
     # randomize the robot state
-    robot_state.set_joint_group_positions("arm_gripper", [-0.57, -0.57, 0.0, -0.57, -0.57, -1.57, 0.0])
+    robot_state.set_joint_group_positions(
+        "arm_gripper", [-0.57, -0.57, 0.0, -0.57, -0.57, -1.57, 0.0]
+    )
 
     # set plan start state to current state
     arm.set_start_state_to_current_state()
@@ -88,13 +86,9 @@ def main():
     arm.set_goal_state(robot_state=robot_state)
 
     # plan to goal
-    #plan_and_execute(gen, arm, logger, sleep_time=20.0)
-
+    # plan_and_execute(gen, arm, logger, sleep_time=20.0)
 
     #####################################
-
-    
-    
 
     ###########################################################################
     # Plan 2 - set goal state with RobotState object
@@ -115,56 +109,74 @@ def main():
     arm.set_goal_state(robot_state=robot_state)
 
     # plan to goal
-    #plan_and_execute(gen, arm, logger, sleep_time=40.0)
+    # plan_and_execute(gen, arm, logger, sleep_time=40.0)
 
     arm.set_start_state_to_current_state()
-    
 
     ###########################################################################
     # Plan 3 - set goal state with PoseStamped message
     ###########################################################################
+    while True:
+        robot_state = RobotState(robot_model)
+        robot_state.set_joint_group_positions(
+            "arm_gripper", [0.0, 0.00, 0.0, 0.0, 0.0, 0.0, 0.0]
+        )
+        # set plan start state to current state
+        arm.set_start_state_to_current_state()
+        # set goal state to the initialized robot state
+        logger.info("Set goal state to the initialized robot state")
+        arm.set_goal_state(robot_state=robot_state)
+        # plan to goal
+        plan_and_execute(gen, arm, logger)
 
-    # set plan start state to current state
-    arm.set_start_state_to_current_state()
+        robot_state = RobotState(robot_model)
+        robot_state.set_joint_group_positions("gripper_plan", [0.035, 0.035])
+        gripper.set_start_state_to_current_state()
+        gripper.set_goal_state(robot_state=robot_state)
+        plan_and_execute(gen, gripper, logger, controllers=["gripper_plan_controller"])
 
-    # set pose goal with PoseStamped message
-    from geometry_msgs.msg import PoseStamped
+        robot_state = RobotState(robot_model)
+        z_position = 0.12 - 0.02 + 0.04  # offset - grip_marge + z_object
+        pose_goal = PoseStamped()
+        pose_goal.header.frame_id = "base_link"
+        pose_goal.pose.orientation.x = 1.0
+        pose_goal.pose.orientation.y = 0.0
+        pose_goal.pose.orientation.z = 0.0
+        pose_goal.pose.orientation.w = 0.0
+        pose_goal.pose.position.x = 0.4
+        pose_goal.pose.position.y = 0.0
+        pose_goal.pose.position.z = z_position + 0.03  # For a bit up
+        arm.set_goal_state(pose_stamped_msg=pose_goal, pose_link="end_effector_link")
+        # plan to goal
+        plan_and_execute(gen, arm, logger)
 
-    gripper_state = RobotState(robot_model)
-    gripper_state.set_joint_group_positions("gripper_plan", [0.8, 0.8])
-    gripper.set_start_state_to_current_state()
-    gripper.set_goal_state(robot_state=gripper_state)
-    plan_and_execute(gen, gripper, logger, sleep_time=10.0, controllers=["gripper_plan_controller"])
+        robot_state = RobotState(robot_model)
+        pose_goal.pose.position.z = (
+            z_position  # hauteur de saisie (box z=0.02 + moitié 0.02 + offset pince)
+        )
+        arm.set_start_state_to_current_state()
+        arm.set_goal_state(pose_stamped_msg=pose_goal, pose_link="end_effector_link")
+        plan_and_execute(gen, arm, logger)
 
-    z_position = 0.12 - 0.02 + 0.04 #offset - grip_marge + z_object 
+        robot_state = RobotState(robot_model)
+        robot_state.set_joint_group_positions("gripper_plan", [0.00, 0.00])
+        gripper.set_start_state_to_current_state()
+        gripper.set_goal_state(robot_state=robot_state)
+        plan_and_execute(
+            gen,
+            gripper,
+            logger,
+            controllers=["gripper_plan_controller"],
+        )
 
-    pose_goal = PoseStamped()
-    pose_goal.header.frame_id = "base_link"
-    pose_goal.pose.orientation.x = 1.0
-    pose_goal.pose.orientation.y = 0.0
-    pose_goal.pose.orientation.z = 0.0
-    pose_goal.pose.orientation.w = 0.0
-    pose_goal.pose.position.x = 0.4
-    pose_goal.pose.position.y = 0.0
-    pose_goal.pose.position.z = z_position + 0.03 #For a bit up
-    arm.set_goal_state(pose_stamped_msg=pose_goal, pose_link="end_effector_link")
-    # plan to goal
-    plan_and_execute(gen, arm, logger, sleep_time=15.0)
+        robot_state = RobotState(robot_model)
+        pose_goal.pose.position.z = (
+            0.35  # hauteur de saisie (box z=0.02 + moitié 0.02 + offset pince)
+        )
+        arm.set_start_state_to_current_state()
+        arm.set_goal_state(pose_stamped_msg=pose_goal, pose_link="end_effector_link")
+        plan_and_execute(gen, arm, logger)
 
-    pose_goal.pose.position.z = z_position     # hauteur de saisie (box z=0.02 + moitié 0.02 + offset pince)
-    arm.set_start_state_to_current_state()
-    arm.set_goal_state(pose_stamped_msg=pose_goal, pose_link="end_effector_link")
-    plan_and_execute(gen, arm, logger, sleep_time=20.0)
-
-    gripper.set_start_state_to_current_state()
-    gripper_state.set_joint_group_positions("gripper_plan", [0.02, 0.02])
-    gripper.set_goal_state(robot_state=gripper_state)
-    plan_and_execute(gen, gripper, logger, sleep_time=25.0, controllers=["gripper_plan_controller"])
-    
-    pose_goal.pose.position.z = 0.35     # hauteur de saisie (box z=0.02 + moitié 0.02 + offset pince)
-    arm.set_start_state_to_current_state()
-    arm.set_goal_state(pose_stamped_msg=pose_goal, pose_link="end_effector_link")
-    plan_and_execute(gen, arm, logger, sleep_time=30.0)
 
 if __name__ == "__main__":
     main()
