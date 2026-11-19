@@ -90,22 +90,22 @@ def generate_launch_description():
 	)
 
 	exec_camera_bridge = TimerAction(
-	    period=15.0,
+	    period=7.0,
 	    actions=[gz_camera_bridge],
 	)
 
 	exec_move_group = TimerAction(
-		period = 30.0,
+		period = 12.0,
 		actions = [move_group],
 	)
 
 	exec_rviz = TimerAction(
-		period = 35.0,
+		period = 17.0,
 		actions = [rviz_node],
 	)
 
 	exec_rqt = TimerAction(
-		period = 40.0,
+		period = 20.0,
 		actions = [rqt_node],
 	)
 
@@ -115,5 +115,5 @@ def generate_launch_description():
 		exec_camera_bridge,
 		exec_move_group,
 		exec_rviz,
-		#exec_rqt,
+		exec_rqt
 		])

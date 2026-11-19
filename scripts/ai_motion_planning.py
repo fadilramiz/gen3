@@ -121,16 +121,16 @@ def main():
                     "type": "object",
                     "properties": {
                         "x_position": {
-                            "type": "string",
-                            "description": "the new x position, take as string",
+                            "type": "integer",
+                            "description": "the new x position, take as number",
                         },
                         "y_position": {
-                            "type": "string",
-                            "description": "the new y position, take as string",
+                            "type": "integer",
+                            "description": "the new y position, take as number",
                         },
                         "z_position": {
-                            "type": "string",
-                            "description": "the new z position, take as string",
+                            "type": "integer",
+                            "description": "the new z position, take as number",
                         },
                     },
                     "required": ["x_position", "y_position", "z_position"],
@@ -140,13 +140,14 @@ def main():
     ]
 
     print("request....")
-    # request = input("Your request...")
-    request = "Call the function move_arm with arguments: x_position=0.20 y_position=0.0 z_position=0.25"
+    #request = input("Your request...")
+    request = "move the arm of the robot to  x=0.25 y=0.0 z=0.3"
+    print(request)
 
     actuel = 1.0
 
     response = ollama.chat(
-        model="llama3.2:1b",
+        model="qwen3:8b",
         messages=[
             {
                 "role": "system",
@@ -161,6 +162,7 @@ def main():
             {"role": "user", "content": request},
         ],
         tools=tools,
+        think=False,
     )
     print(response)
 
@@ -178,6 +180,8 @@ def main():
         print("\n")
         print(f"The name is {tool_name} and the argument is {argument}")
 
+        x_pos, y_pos, z_pos = 0, 0, 0
+        
         if tool_name == "move_to":
             actuel = move_to(int(argument["distance"]), int(actuel))
             print(actuel)

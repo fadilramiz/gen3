@@ -47,18 +47,27 @@ def generate_launch_description():
 			'-string', robot_description_content,
 		],
 	)
+	
+	controllers_yaml = os.path.join(pkg_share, "config", "ros2_controllers.yaml")
 
-	gen3_arm = ExecuteProcess(
-		cmd = ['ros2', 'control', 'load_controller', '--set-state', 'active', 'arm_gripper_controller']
+	gen3_arm = Node(
+		package = 'controller_manager',
+		executable = 'spawner',
+		arguments = ['arm_gripper_controller', '--param-file', controllers_yaml],
+	)
+ 
+	gripper_controller = Node(
+		package = 'controller_manager',
+		executable = 'spawner',
+		arguments = ['gripper_plan_controller', '--param-file', controllers_yaml],
+	)
+ 
+	joint_state = Node(
+		package = 'controller_manager',
+		executable = 'spawner',
+		arguments = ['joint_state_broadcaster', '--param-file', controllers_yaml],
 	)
 
-	gripper_controller = ExecuteProcess(
-		cmd = ['ros2', 'control', 'load_controller', '--set-state', 'active', 'gripper_plan_controller']
-	)
-
-	joint_state = ExecuteProcess(
-		cmd = ['ros2', 'control', 'load_controller', '--set-state', 'active', 'joint_state_broadcaster']
-	)
 
 	param1 = ExecuteProcess(
 		cmd = ['ros2', 'param', 'set', '/controller_manager', 'use_sim_time', 'true']

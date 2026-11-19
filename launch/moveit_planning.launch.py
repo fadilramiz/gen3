@@ -100,12 +100,12 @@ def generate_launch_description():
 	)
 
 	exec_move_group = TimerAction(
-		period = 30.0,
+		period = 20.0,
 		actions = [move_group],
 	)
 
 	exec_rviz = TimerAction(
-		period = 35.0,
+		period = 25.0,
 		actions = [rviz_node],
 	)
 
@@ -142,5 +142,5 @@ def generate_launch_description():
 		exec_move_group,
 		exec_rviz,
 		exec_moveit_py_node,
-		#exec_rqt,
+		exec_rqt,
 		])
