@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import os
-from launch import LaunchDescription 
+from launch import LaunchDescription
+from launch.conditions import IfCondition 
 from launch_ros.actions import Node
 from launch.actions import (
 	TimerAction,
@@ -11,7 +12,7 @@ from launch.actions import (
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
 from moveit_configs_utils import MoveItConfigsBuilder 
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PythonExpression
 
 def generate_launch_description():
 	# ---------------------------------------------------------------
@@ -116,7 +117,7 @@ def generate_launch_description():
 
 	example_file = DeclareLaunchArgument(
 		"example_file",
-		default_value="motion_planning_python_api_tutorial.py",
+		default_value="",
 		description="Python API tutorial file name",
 	)
 
@@ -126,6 +127,8 @@ def generate_launch_description():
 		executable=LaunchConfiguration("example_file"),
 		output="both",
 		parameters=[moveit_config_dict],
+		condition=IfCondition(PythonExpression(["'", LaunchConfiguration("example_file"), "' != ''"])
+		),
 	)
 
 	exec_moveit_py_node = TimerAction(
@@ -133,6 +136,26 @@ def generate_launch_description():
 		actions = [moveit_py_node],
 	)
 
+	ros_server_node = Node(
+		package= "gen3",
+		executable= "ros_server.py",
+		output = "screen"
+	)
+
+	robot_action_node = Node(
+		package= "gen3",
+		executable= "robot_action_server.py",
+		output = "screen"
+	)
+
+	exec_ros_server_node = TimerAction(
+		period= 42.0,
+		actions= [ros_server_node]
+	)
+
+	exec_robot_action_node = TimerAction(
+		period= 44.0,
+		actions= [robot_action_node])
 
 	return LaunchDescription([
 		example_file,
@@ -143,4 +166,6 @@ def generate_launch_description():
 		exec_rviz,
 		exec_moveit_py_node,
 		exec_rqt,
+		exec_ros_server_node,
+		exec_robot_action_node
 		])
